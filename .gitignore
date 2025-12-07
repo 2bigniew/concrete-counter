@@ -1,0 +1,103 @@
+# -------------------------
+# OS FILES
+# -------------------------
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+
+# -------------------------
+# IDE / EDITOR FILES
+# -------------------------
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+out/
+
+# VS Code (optional, devs may use it)
+.vscode/
+
+# -------------------------
+# GO
+# -------------------------
+# Build artifacts
+bin/
+build/
+dist/
+*.exe
+*.test
+*.out
+
+# Go module cache (never commit)
+go.work
+go.work.sum
+
+# -------------------------
+# JAVA / MAVEN / GRADLE
+# -------------------------
+# Maven
+target/
+*.log
+*.class
+
+# Gradle
+.gradle/
+build/
+
+# Java misc
+hs_err_pid*
+replay_pid*
+
+# -------------------------
+# DOCKER / CONTAINERS
+# -------------------------
+# Docker Compose override files
+docker-compose.override.yml
+docker-compose.*.yml
+
+# Docker build artifacts
+*.tar
+*.dockerfile.tmp
+
+# -------------------------
+# LOGS / RUNTIME FILES
+# -------------------------
+logs/
+log/
+*.log
+
+# PID files
+*.pid
+
+# -------------------------
+# ENV / SECRETS
+# -------------------------
+.env
+.env.*
+!.env.example
+
+# -------------------------
+# TEMP / CACHE
+# -------------------------
+tmp/
+temp/
+.cache/
+*.cache
+*.swp
+*.swo
+
+# Node leftovers (sometimes appear in tooling-related projects)
+node_modules/
+
+# Python leftovers (in case tooling uses Python scripts)
+__pycache__/
+*.pyc

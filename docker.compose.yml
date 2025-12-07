@@ -1,0 +1,13 @@
+services:
+  cc-publisher:
+    container_name: cc-publisher
+    image: golang:latest
+    working_dir: /app
+    volumes:
+      - ./cc-publisher:/app
+    command: go run ./cmd/cc-publisher
+    env_file:
+      - ./cc-publisher/.env
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
