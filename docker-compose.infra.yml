@@ -1,0 +1,196 @@
+services:
+  kafka1:
+    image: confluentinc/cp-kafka:8.1.0
+    #    user: root # uncomment it in case of a writable permissions error
+    hostname: kafka1
+    container_name: kafka1
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_BROKER_ID: 1
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1:9093,2@kafka2:9093,3@kafka3:9093'
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka1:9092,CONTROLLER://kafka1:9093'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka1:9092'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      CLUSTER_ID: 'daQ5e0Z2MzKnZYPA2sxDug'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_MIN_INSYNC_REPLICAS: 2
+    volumes:
+      - ./kafka1/data:/var/lib/kafka/data
+    networks:
+      - concrete-network
+
+  kafka2:
+    image: confluentinc/cp-kafka:8.1.0
+    #    user: root # uncomment it in case of a writable permissions error
+    hostname: kafka2
+    container_name: kafka2
+    ports:
+      - "9094:9092"
+      - "9095:9093"
+    environment:
+      KAFKA_NODE_ID: 2
+      KAFKA_BROKER_ID: 2
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1:9093,2@kafka2:9093,3@kafka3:9093'
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka2:9092,CONTROLLER://kafka2:9093'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka2:9092'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      CLUSTER_ID: 'daQ5e0Z2MzKnZYPA2sxDug'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_MIN_INSYNC_REPLICAS: 2
+    volumes:
+      - ./kafka2/data:/var/lib/kafka/data
+    networks:
+      - concrete-network
+
+  kafka3:
+    image: confluentinc/cp-kafka:8.1.0
+    #    user: root # uncomment it in case of a writable permissions error
+    hostname: kafka3
+    container_name: kafka3
+    ports:
+      - "9096:9092"
+      - "9097:9093"
+    environment:
+      KAFKA_NODE_ID: 3
+      KAFKA_BROKER_ID: 3
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1:9093,2@kafka2:9093,3@kafka3:9093'
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka3:9092,CONTROLLER://kafka3:9093'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka3:9092'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      CLUSTER_ID: 'daQ5e0Z2MzKnZYPA2sxDug'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_MIN_INSYNC_REPLICAS: 2
+    volumes:
+      - ./kafka3/data:/var/lib/kafka/data
+    networks:
+      - concrete-network
+
+
+  kafka-schema-registry:
+    image: confluentinc/cp-schema-registry:7.4.0
+    hostname: kafka-schema-registry
+    container_name: kafka-schema-registry
+    depends_on: [kafka1, kafka2, kafka3]
+    ports:
+      - "8081:8081"
+    environment:
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: "kafka1:9092,kafka2:9092,kafka3:9092"
+      SCHEMA_REGISTRY_HOST_NAME: kafka-schema-registry
+      SCHEMA_REGISTRY_LISTENERS: "http://0.0.0.0:8081"
+      SCHEMA_REGISTRY_KAFKASTORE_TOPIC_REPLICATION_FACTOR: "3"
+      SCHEMA_REGISTRY_KAFKASTORE_TOPIC_MIN_IN_SYNC_REPLICAS: "2"
+    networks:
+      - concrete-network
+
+  kafka-connect:
+    image: confluentinc/cp-kafka-connect:7.4.0
+    hostname: kafka-connect
+    container_name: kafka-connect
+    depends_on:
+      - kafka-schema-registry
+    ports:
+      - "8083:8083"
+    environment:
+      CONNECT_BOOTSTRAP_SERVERS: "kafka1:9092,kafka2:9092,kafka3:9092"
+      CONNECT_REST_ADVERTISED_HOST_NAME: kafka-connect
+      CONNECT_GROUP_ID: "connect-group"
+      CONNECT_CONFIG_STORAGE_TOPIC: "connect-configs"
+      CONNECT_OFFSET_STORAGE_TOPIC: "connect-offsets"
+      CONNECT_STATUS_STORAGE_TOPIC: "connect-status"
+      CONNECT_KEY_CONVERTER: "org.apache.kafka.connect.storage.StringConverter"
+      CONNECT_VALUE_CONVERTER: "io.confluent.connect.avro.AvroConverter"
+      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: "http://kafka-schema-registry:8081"
+      CONNECT_LOG4J_LOGGERS: "org.apache.kafka.connect.runtime.rest=WARN,org.reflections=ERROR"
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: "3"
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: "3"
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: "3"
+      CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components"
+      CONNECT_REST_PORT: 8083
+      CONNECT_PRODUCER_MAX_REQUEST_SIZE: 16777216
+    networks:
+      - concrete-network
+
+    command: >
+      bash -c '
+        confluent-hub install --no-prompt confluentinc/kafka-connect-s3:latest && 
+        /etc/confluent/docker/run
+      '
+
+  conduktor-db:
+    image: postgres:14
+    volumes:
+      - ./conduktor-db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: "conduktor_console"
+      POSTGRES_USER: "conduktor"
+      POSTGRES_PASSWORD: "password"
+      POSTGRES_HOST_AUTH_METHOD: "scram-sha-256"
+    ports:
+      - 6432:5432
+    networks:
+      - concrete-network
+
+  conduktor-console:
+    image: conduktor/conduktor-console:1.32.0
+    #    user: root # uncomment it in case of error: chown: changing ownership of '/var/conduktor/log': Operation not permitted
+    ports:
+      - "8080:8080"
+    depends_on:
+      - conduktor-db
+    volumes:
+      - ./conduktor-data:/var/conduktor
+    environment:
+      CDK_DATABASE_URL: "postgresql://conduktor:password@conduktor-db:5432/conduktor_console"
+      CDK_CLUSTERS_0_ID: "local"
+      CDK_CLUSTERS_0_NAME: "Local Kafka Cluster"
+      CDK_CLUSTERS_0_BOOTSTRAPSERVERS: "kafka1:9092,kafka2:9092,kafka3:9092"
+      CDK_CLUSTERS_0_SCHEMAREGISTRY_URL: "http://kafka-schema-registry:8081"
+      CDK_CLUSTERS_0_KAFKACONNECTS_0_URL: "http://kafka-connect:8083"
+      CDK_CLUSTERS_0_KAFKACONNECTS_0_NAME: "kafka"
+      CDK_ADMIN_EMAIL: "admin@conduktor.io"
+      CDK_ADMIN_PASSWORD: "Conduktor1!"
+    networks:
+      - concrete-network
+
+  timescale:
+    image: timescale/timescaledb:latest-pg17
+    ports:
+      - 7432:5432
+    container_name: timescale
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: counters
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 2s
+      timeout: 2s
+      retries: 20
+    volumes:
+      - ./timescale-data:/var/lib/postgresql/data
+    command: [ "postgres", "-c", "log_statement=all" ]
+    networks:
+      - concrete-network
+
+networks:
+  concrete-network:
+    driver: bridge
+    external: true

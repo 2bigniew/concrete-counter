@@ -62,7 +62,6 @@ replay_pid*
 # -------------------------
 # Docker Compose override files
 docker-compose.override.yml
-docker-compose.*.yml
 
 # Docker build artifacts
 *.tar
