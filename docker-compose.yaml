@@ -1,0 +1,37 @@
+version: "3.9"
+
+services:
+  event-listener:
+    container_name: event-listener
+    image: golang:latest
+    working_dir: /app
+    volumes:
+      - ./go-services:/app
+    command: go run ./cmd/event-listener/main.go
+    env_file:
+      - go-services/cmd/event-listener/.env
+    ports:
+      - "3081:3081"
+    restart: unless-stopped
+    networks:
+      - concrete-network
+
+  event-processor:
+    container_name: event-processor
+    image: golang:latest
+    working_dir: /app
+    volumes:
+      - ./go-services:/app
+    command: go run ./cmd/event-processor/main.go
+    env_file:
+      - go-services/cmd/event-processor/.env
+    ports:
+      - "3082:3082"
+    restart: unless-stopped
+    networks:
+      - concrete-network
+
+networks:
+  concrete-network:
+    driver: bridge
+    external: true
